@@ -88,7 +88,6 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
   ca->InitTraversal();
   vtkIdType npts, *pts;
   int res;
-  double maxArea = 0.0, minArea = 1.0E12, total = 0.0;
   while((res = ca->GetNextCell(npts, pts))) {
     assert(npts == 3);
     double x[3][3];

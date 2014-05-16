@@ -70,10 +70,9 @@ int main ( int argc, char *argv[] )
 
   // TODO: using the superaurale and chelion on the side of cleft lip
   // Define the normal direction of the projection plane
-  double n[3] = {0.0, sal[1] - cl[1], sal[2] - cl[2]};
+  double n[3] = {0.0, abs(sal[1] - cl[1]), abs(sal[2] - cl[2])};
   double norm = sqrt(pow(n[1], 2.0) + pow(n[2], 2.0));
   double theta = acos(-n[2] / norm) * 180 / PI;
-  //std::cout << theta << std::endl;
 
   vtkSmartPointer<vtkClipPolyData> nose = 
     getNoseClipper(reader, se, cl, cr, al, ar);
