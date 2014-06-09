@@ -203,9 +203,39 @@ getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
   return leftToRightAlareFace;
 }
 
-void getProjection(double *normal, double *original, double *projected) {
+void getProjection(const double normal[3], const double original[3], double projected[3]) {
   double norm = pow(normal[1], 2.0) + pow(normal[2], 2.0);
   projected[0] = original[0];
   projected[1] = normal[2] * (normal[2]*original[1] - normal[1]*original[2]) / norm;
   projected[2] = normal[1] * (normal[1]*original[2] - normal[2]*original[1]) / norm;
+}
+
+bool
+isCenterInRect(
+  const double center[3],
+  const double left,
+  const double right,
+  const double bottom,
+  const double top)
+{
+  return center[2] > 0.0
+         && center[0] > left && center[0] < right
+         && center[1] > bottom && center[1] < top;
+}
+
+bool
+isAllPointsInRect(
+  const double pts[3][3],
+  const double left,
+  const double right,
+  const double bottom,
+  const double top)
+{
+return      pts[0][2] > 0.0 && pts[1][2] > 0.0 && pts[2][2] > 0.0
+         && pts[0][0] > left && pts[1][0] > left && pts[2][0] > left
+         && pts[0][0] < right && pts[1][0] < right && pts[2][0] < right
+         && pts[0][1] > bottom && pts[1][1] > bottom && pts[2][1] > bottom 
+         && pts[0][1] < top && pts[1][1] < top && pts[2][1] < top;
+
+
 }

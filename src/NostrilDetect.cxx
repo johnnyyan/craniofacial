@@ -72,7 +72,7 @@ int main ( int argc, char *argv[] )
   // Define the normal direction of the projection plane
   double n[3] = {0.0, abs(sal[1] - cl[1]), abs(sal[2] - cl[2])};
   double norm = sqrt(pow(n[1], 2.0) + pow(n[2], 2.0));
-  double theta = acos(-n[2] / norm) * 180 / PI;
+//  double theta = acos(-n[2] / norm) * 180 / PI;
 
   vtkSmartPointer<vtkClipPolyData> nose = 
     getNoseClipper(reader, se, cl, cr, al, ar);
@@ -98,7 +98,8 @@ int main ( int argc, char *argv[] )
 
   vtkSmartPointer<vtkTransform> transform = 
     vtkSmartPointer<vtkTransform>::New();
-  transform->RotateWXYZ(-theta, 1, 0, 0);
+  transform->RotateWXYZ(-20, 1, 0, 0);
+  //transform->RotateWXYZ(90-theta, 1, 0, 0);
 
   vtkSmartPointer<vtkTransformPolyDataFilter> noseFilter =
     vtkSmartPointer<vtkTransformPolyDataFilter>::New();

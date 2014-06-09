@@ -29,11 +29,14 @@ findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
     for (vtkIdType i = 0; i < 3; i++) {
       points->GetPoint(pts[i],x[i]);
     }
-    double center[3];
-    getCenter(x[0], x[1], x[2], center);
-    if (center[0] > ar[0] && center[0] < al[0] &&
-        center[1] > sn[1] && center[1] < prn[1] &&
-        center[2] > 0.0) {
+//    //-- Center is in the rect
+//    double center[3];
+//    getCenter(x[0], x[1], x[2], center);
+//    if ( isCenterInRect(center, ar[0], al[0], sn[1], prn[1]) ) {
+//    //-- All points are in the rect
+//    if ( isAllPointsInRect(x, ar[0], al[0], sn[1], prn[1]) ) {
+    //-- Center is in the diamond 
+    if ( isCenterInDim() ) {
       double area = tarea2(x[0], x[1], x[2]);
       // TODO: replace hard-coded number 4.0 with a dynamic one
       if (area > 4.0) {

@@ -5,6 +5,8 @@
 #include <vtkClipPolyData.h>
 #include <vtkPLYReader.h>
 
+// TODO: Add on const 
+
 // Calculate the area of a triangle determined by points x, y, z,
 // using ad hoc methods
 //
@@ -86,6 +88,40 @@ getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
 // - normal: the normal direction of the projection plane
 // - original: the point to be projected
 // - projected: return parameter, the projected point onto the plane
-void getProjection(double *normal, double *original, double *projected);
+void getProjection(const double normal[3], const double original[3], double projected[3]);
+
+// Is the center point in the rectangle and the z > 0 bisector?
+//
+// Arguments
+// - center: the center point of a triangle 
+// - left, right, bottom, top: the boundaries of the rectangle
+//
+// Return
+// - true if the center point is in the rectangle and the z > 0 bisector; 
+// - false otherwise
+bool
+isCenterInRect(
+  const double center[3],
+  const double left,
+  const double right,
+  const double bottom,
+  const double top);
+
+// Are all points in the rectangle and the z > 0 bisector?
+//
+// Arguments
+// - pts: all points in a triangle we want to decide
+// - left, right, bottom, top: the boundaries of the rectangle
+//
+// Return
+// - true if all points are in the rectangle and the z > 0 bisector; 
+// - false otherwise
+bool
+isAllPointsInRect(
+  const double pts[3][3],
+  const double left,
+  const double right,
+  const double bottom,
+  const double top);
 
 #endif  // _UTILITY_H_
