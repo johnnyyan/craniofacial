@@ -5,8 +5,6 @@
 #include <vtkClipPolyData.h>
 #include <vtkPLYReader.h>
 
-// TODO: Add on const 
-
 // Calculate the area of a triangle determined by points x, y, z,
 // using ad hoc methods
 //
@@ -15,7 +13,12 @@
 //
 // Return
 // - the area of the triangle
-double tarea(double x[3], double y[3], double z[3]);
+double
+tarea(
+  const double x[3],
+  const double y[3],
+  const double z[3]
+);
 
 // Calculate the area of a triangle determined by points x, y, z,
 // using VTK built-in functions
@@ -25,14 +28,25 @@ double tarea(double x[3], double y[3], double z[3]);
 //
 // Return
 // - the area of the triangle
-double tarea2(double x[3], double y[3], double z[3]);
+double
+tarea2(
+  double x[3],
+  double y[3],
+  double z[3]
+);
 
 // Calculate the center of a triangle determined by points x, y, z
 //
 // Arguments
 // - x, y, z: the three points of a triangle
 // - center: the return parameter of the triangle center
-void getCenter(double x[3], double y[3], double z[3], double center[3]);
+void
+getCenter(
+  const double x[3],
+  const double y[3],
+  const double z[3],
+  double center[3]
+);
 
 // Calculate the center of an incircle in triangle xyz
 //
@@ -42,17 +56,27 @@ void getCenter(double x[3], double y[3], double z[3], double center[3]);
 //
 // Return
 // - the radius of the circle
-double getIncircleCenter(double x[3], double y[3], double z[3], double incenter[3]);
+double
+getIncircleCenter(
+  double x[3],
+  double y[3],
+  double z[3],
+  double incenter[3]
+);
 
-// Decide point x is on the left/right side of line prn-sn
+// Decide point x is on the left/right side of line pt1-pt2
 //
 // Arguments
 // - x: the point
-// - prn, sn: pronasale and sbunasale points
+// - pt1, pt2: two points on the line
 //
 // Return
 // - true, if the point is on the left side; false otherwise
-bool onLeft(double x[3], double prn[3], double sn[3]);
+bool onLeft(
+  const double x[3],
+  const double pt1[3],
+  const double pt2[3]
+);
 
 // Get the landmarks from file. It's the user's responsibility to guarantee the
 // correctness of the input file format.
@@ -63,12 +87,21 @@ bool onLeft(double x[3], double prn[3], double sn[3]);
 //
 // Return
 // - true, if the file opened successfully; false otherwise
-bool GetLandmarksFromFile(std::string file, double prn[3], 
-                          double sn[3], double se[3], 
-                          double acl[3], double acr[3], 
-                          double al[3], double ar[3], 
-                          double cl[3], double cr[3],
-                          double sal[3], double sar[3]);
+bool
+GetLandmarksFromFile(
+  const std::string file,
+  double prn[3],
+  double sn[3],
+  double se[3],
+  double acl[3],
+  double acr[3],
+  double al[3],
+  double ar[3],
+  double cl[3],
+  double cr[3],
+  double sal[3],
+  double sar[3]
+);
 
 // Get the nose area clip
 //
@@ -79,8 +112,14 @@ bool GetLandmarksFromFile(std::string file, double prn[3],
 // Return
 // - the vtkClipPolyData of the nose area
 vtkSmartPointer<vtkClipPolyData> 
-getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
-               double cl[3], double cr[3], double al[3], double ar[3]);
+getNoseClipper(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double se[3],
+  double cl[3],
+  double cr[3],
+  double al[3],
+  double ar[3]
+);
 
 // Get the projection of a point on the plane given normal
 //
@@ -88,7 +127,12 @@ getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
 // - normal: the normal direction of the projection plane
 // - original: the point to be projected
 // - projected: return parameter, the projected point onto the plane
-void getProjection(const double normal[3], const double original[3], double projected[3]);
+void
+getProjection(
+  const double normal[3],
+  const double original[3],
+  double projected[3]
+);
 
 // Is the center point in the rectangle and the z > 0 bisector?
 //
@@ -105,7 +149,8 @@ isCenterInRect(
   const double left,
   const double right,
   const double bottom,
-  const double top);
+  const double top
+);
 
 // Are all points in the rectangle and the z > 0 bisector?
 //
@@ -122,6 +167,7 @@ isAllPointsInRect(
   const double left,
   const double right,
   const double bottom,
-  const double top);
+  const double top
+);
 
 #endif  // _UTILITY_H_

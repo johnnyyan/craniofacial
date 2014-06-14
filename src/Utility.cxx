@@ -6,10 +6,16 @@
 #include <fstream>
 #include "Utility.h"
 
-double tarea(double x[3], double y[3], double z[3]) {
-  // x as point A
-  // y as point B
-  // z as point C
+// x as point A
+// y as point B
+// z as point C
+double
+tarea(
+  const double x[3],
+  const double y[3],
+  const double z[3]
+)
+{
   double AB[3] = {x[0] - y[0], x[1] - y[1], x[2] - y[2]};
   double AC[3] = {x[0] - z[0], x[1] - z[1], x[2] - z[2]};
   double area = 0.0;
@@ -20,18 +26,38 @@ double tarea(double x[3], double y[3], double z[3]) {
   return area;
 }
 
-double tarea2(double x[3], double y[3], double z[3]) {
+double
+tarea2(
+  double x[3],
+  double y[3],
+  double z[3]
+)
+{
   double altitude = sqrt(vtkLine::DistanceToLine(x, y, z));
   double sidelen = sqrt(vtkMath::Distance2BetweenPoints(y, z));
   return sidelen * altitude / 2.0;
 }
 
-void getCenter(double x[3], double y[3], double z[3], double center[3]) {
+void
+getCenter(
+  const double x[3],
+  const double y[3],
+  const double z[3],
+  double center[3]
+)
+{
   for (int i = 0; i < 3; i++)
     center[i] = (x[i] + y[i] + z[i]) / 3.0;
 }
 
-double getIncircleCenter(double x[3], double y[3], double z[3], double incenter[3]) {
+double
+getIncircleCenter(
+  double x[3],
+  double y[3],
+  double z[3],
+  double incenter[3]
+)
+{
   double a = sqrt(vtkMath::Distance2BetweenPoints(y, z));
   double b = sqrt(vtkMath::Distance2BetweenPoints(z, x));
   double c = sqrt(vtkMath::Distance2BetweenPoints(x, y));
@@ -42,19 +68,34 @@ double getIncircleCenter(double x[3], double y[3], double z[3], double incenter[
   return sqrt(vtkLine::DistanceToLine(incenter, x, y));
 }
 
-bool onLeft(double x[3], double prn[3], double sn[3]) {
-  double dir[3] = {sn[0]-prn[0], sn[1]-prn[1], sn[2]-prn[2]};
-  double xdir[3] = {x[0]-prn[0], x[1]-prn[1], x[2]-prn[2]};
+bool onLeft(
+  const double x[3],
+  const double pt1[3],
+  const double pt2[3]
+)
+{
+  double dir[3] = {pt2[0]-pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};
+  double xdir[3] = {x[0]-pt1[0], x[1]-pt1[1], x[2]-pt1[2]};
   double zvalue = xdir[0]*dir[1] - xdir[1]*dir[0];
   return zvalue < 0.0;
 }
 
-bool GetLandmarksFromFile(std::string file, double prn[3], 
-                          double sn[3], double se[3], 
-                          double acl[3], double acr[3], 
-                          double al[3], double ar[3], 
-                          double cl[3], double cr[3],
-                          double sal[3], double sar[3]){
+bool
+GetLandmarksFromFile(
+  const std::string file,
+  double prn[3],
+  double sn[3],
+  double se[3],
+  double acl[3],
+  double acr[3],
+  double al[3],
+  double ar[3],
+  double cl[3],
+  double cr[3],
+  double sal[3],
+  double sar[3]
+)
+{
   std::ifstream input(file.c_str());
   if (!input) {
     std::cerr << "Error: failed to open file " << file << std::endl;
@@ -146,8 +187,15 @@ bool GetLandmarksFromFile(std::string file, double prn[3],
 }
 
 vtkSmartPointer<vtkClipPolyData> 
-getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
-               double cl[3], double cr[3], double al[3], double ar[3]) {
+getNoseClipper(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double se[3],
+  double cl[3],
+  double cr[3],
+  double al[3],
+  double ar[3]
+)
+{
   vtkSmartPointer<vtkPlane> midPlane =
     vtkSmartPointer<vtkPlane>::New();
   midPlane->SetNormal(0.0, 0.0, 1.0);
@@ -203,7 +251,13 @@ getNoseClipper(vtkSmartPointer<vtkPLYReader> reader, double se[3],
   return leftToRightAlareFace;
 }
 
-void getProjection(const double normal[3], const double original[3], double projected[3]) {
+void
+getProjection(
+  const double normal[3],
+  const double original[3],
+  double projected[3]
+)
+{
   double norm = pow(normal[1], 2.0) + pow(normal[2], 2.0);
   projected[0] = original[0];
   projected[1] = normal[2] * (normal[2]*original[1] - normal[1]*original[2]) / norm;
@@ -216,7 +270,8 @@ isCenterInRect(
   const double left,
   const double right,
   const double bottom,
-  const double top)
+  const double top
+)
 {
   return center[2] > 0.0
          && center[0] > left && center[0] < right
@@ -229,13 +284,12 @@ isAllPointsInRect(
   const double left,
   const double right,
   const double bottom,
-  const double top)
+  const double top
+)
 {
-return      pts[0][2] > 0.0 && pts[1][2] > 0.0 && pts[2][2] > 0.0
+  return pts[0][2] > 0.0 && pts[1][2] > 0.0 && pts[2][2] > 0.0
          && pts[0][0] > left && pts[1][0] > left && pts[2][0] > left
          && pts[0][0] < right && pts[1][0] < right && pts[2][0] < right
          && pts[0][1] > bottom && pts[1][1] > bottom && pts[2][1] > bottom 
          && pts[0][1] < top && pts[1][1] < top && pts[2][1] < top;
-
-
 }
