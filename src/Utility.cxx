@@ -6,18 +6,15 @@
 #include <fstream>
 #include "Utility.h"
 
-// x as point A
-// y as point B
-// z as point C
 double
 tarea(
-  const double x[3],
-  const double y[3],
-  const double z[3]
+  const double A[3],
+  const double B[3],
+  const double C[3]
 )
 {
-  double AB[3] = {x[0] - y[0], x[1] - y[1], x[2] - y[2]};
-  double AC[3] = {x[0] - z[0], x[1] - z[1], x[2] - z[2]};
+  double AB[3] = {A[0] - B[0], A[1] - B[1], A[2] - B[2]};
+  double AC[3] = {A[0] - C[0], A[1] - C[1], A[2] - C[2]};
   double area = 0.0;
   area += pow((AB[1] * AC[2] - AB[2] * AC[1]), 2.0); 
   area += pow((AB[2] * AC[0] - AB[0] * AC[2]), 2.0); 
@@ -28,44 +25,44 @@ tarea(
 
 double
 tarea2(
-  double x[3],
-  double y[3],
-  double z[3]
+  double A[3],
+  double B[3],
+  double C[3]
 )
 {
-  double altitude = sqrt(vtkLine::DistanceToLine(x, y, z));
-  double sidelen = sqrt(vtkMath::Distance2BetweenPoints(y, z));
+  double altitude = sqrt(vtkLine::DistanceToLine(A, B, C));
+  double sidelen = sqrt(vtkMath::Distance2BetweenPoints(B, C));
   return sidelen * altitude / 2.0;
 }
 
 void
 getCenter(
-  const double x[3],
-  const double y[3],
-  const double z[3],
+  const double A[3],
+  const double B[3],
+  const double C[3],
   double center[3]
 )
 {
   for (int i = 0; i < 3; i++)
-    center[i] = (x[i] + y[i] + z[i]) / 3.0;
+    center[i] = (A[i] + B[i] + C[i]) / 3.0;
 }
 
 double
 getIncircleCenter(
-  double x[3],
-  double y[3],
-  double z[3],
+  double A[3],
+  double B[3],
+  double C[3],
   double incenter[3]
 )
 {
-  double a = sqrt(vtkMath::Distance2BetweenPoints(y, z));
-  double b = sqrt(vtkMath::Distance2BetweenPoints(z, x));
-  double c = sqrt(vtkMath::Distance2BetweenPoints(x, y));
+  double a = sqrt(vtkMath::Distance2BetweenPoints(B, C));
+  double b = sqrt(vtkMath::Distance2BetweenPoints(C, A));
+  double c = sqrt(vtkMath::Distance2BetweenPoints(A, B));
   double total = a + b + c;
-  incenter[0] = (a*x[0] + b*y[0] + c*z[0]) / total;
-  incenter[1] = (a*x[1] + b*y[1] + c*z[1]) / total;
-  incenter[2] = (a*x[2] + b*y[2] + c*z[2]) / total;
-  return sqrt(vtkLine::DistanceToLine(incenter, x, y));
+  incenter[0] = (a*A[0] + b*B[0] + c*C[0]) / total;
+  incenter[1] = (a*A[1] + b*B[1] + c*C[1]) / total;
+  incenter[2] = (a*A[2] + b*B[2] + c*C[2]) / total;
+  return sqrt(vtkLine::DistanceToLine(incenter, A, B));
 }
 
 bool onLeft(
@@ -279,7 +276,7 @@ isCenterInRect(
 }
 
 bool
-isAllPointsInRect(
+isTriangleInRect(
   const double pts[3][3],
   const double left,
   const double right,
@@ -287,9 +284,171 @@ isAllPointsInRect(
   const double top
 )
 {
-  return pts[0][2] > 0.0 && pts[1][2] > 0.0 && pts[2][2] > 0.0
-         && pts[0][0] > left && pts[1][0] > left && pts[2][0] > left
-         && pts[0][0] < right && pts[1][0] < right && pts[2][0] < right
-         && pts[0][1] > bottom && pts[1][1] > bottom && pts[2][1] > bottom 
-         && pts[0][1] < top && pts[1][1] < top && pts[2][1] < top;
+  return isCenterInRect(pts[0], left, right, bottom, top) 
+         && isCenterInRect(pts[1], left, right, bottom, top) 
+         && isCenterInRect(pts[2], left, right, bottom, top);
+}
+
+bool
+isCenterInDiam(
+  const double center[3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3])
+{
+  return isProjectionInTriangle(center, left, bottom, top) 
+         || isProjectionInTriangle(center, right, bottom, top);
+}
+
+bool
+isProjectionInTriangle(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3])
+{
+  double proj[3];
+  getProjectionPoint(pt, A, B, C, proj);
+  return isPointInTriangle(proj, A, B, C);
+}
+
+void
+getProjectionPoint(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3],
+  double proj[3])
+{
+  double AB[3], AC[3];
+  vtkMath::Subtract(B, A, AB);
+  vtkMath::Subtract(C, A, AC);
+
+  // Get the normal from AB X AC
+  double normal[3];
+  vtkMath::Cross(AB, AC, normal);
+  vtkMath::Normalize(normal);
+
+  // Project the point pt onto the plane defined by A and normal
+  vtkSmartPointer<vtkPlane> plane = 
+    vtkSmartPointer<vtkPlane>::New();
+  plane->SetOrigin(const_cast<double *>(A));
+  plane->SetNormal(normal);
+
+  plane->ProjectPoint(const_cast<double *>(pt), const_cast<double *>(A), normal, proj);
+}
+
+bool
+isPointInTriangle(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3])
+{
+  double AB[3], BC[3], CA[3];
+  vtkMath::Subtract(B, A, AB);
+  vtkMath::Subtract(C, B, BC);
+  vtkMath::Subtract(A, C, CA);
+
+  double AP[3], BP[3], CP[3];
+  vtkMath::Subtract(pt, A, AP);
+  vtkMath::Subtract(pt, B, BP);
+  vtkMath::Subtract(pt, C, CP);
+
+  double crossA[3], crossB[3], crossC[3];
+  vtkMath::Cross(AB, AP, crossA);
+  vtkMath::Cross(BC, BP, crossB);
+  vtkMath::Cross(CA, CP, crossC);
+
+  double abDot = vtkMath::Dot(crossA, crossB);
+  double bcDot = vtkMath::Dot(crossB, crossC);
+  double caDot = vtkMath::Dot(crossC, crossA);
+
+  return (abDot > 0 && bcDot > 0 && caDot > 0) || (abDot < 0 && bcDot < 0 && caDot < 0); 
+}
+
+bool
+isTriangleInDiam(
+  const double pts[3][3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3]
+)
+{
+  return (  isProjectionInTriangle(pts[0], left, bottom, top) 
+         && isProjectionInTriangle(pts[1], left, bottom, top)
+         && isProjectionInTriangle(pts[2], left, bottom, top) ) ||
+         (  isProjectionInTriangle(pts[0], right, bottom, top) 
+         && isProjectionInTriangle(pts[1], right, bottom, top)
+         && isProjectionInTriangle(pts[2], right, bottom, top) );
+}
+
+bool
+isCenterInCircle(
+  const double center[3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3],
+  const double lOrigin[3],
+  const double lRadius,
+  const double rOrigin[3],
+  const double rRadius
+)
+{
+  if ( isProjectionInTriangle(center, left, bottom, top) ){
+    // We could have used the distance between origin and the projection of 
+    // center. But we decided to use the circle radius as a sphere radius
+    if ( sqrt(vtkMath::Distance2BetweenPoints(center, lOrigin)) < lRadius )
+      return true;
+    else
+      return false;
+  }
+  if ( isProjectionInTriangle(center, right, bottom, top) ){
+    if ( sqrt(vtkMath::Distance2BetweenPoints(center, rOrigin)) < rRadius )
+      return true;
+    else
+      return false;
+  }
+
+  return false;
+}
+
+bool
+isTriangleInCircle(
+  const double pts[3][3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3],
+  const double lOrigin[3],
+  const double lRadius,
+  const double rOrigin[3],
+  const double rRadius
+)
+{
+  if (  isProjectionInTriangle(pts[0], left, bottom, top) 
+     && isProjectionInTriangle(pts[1], left, bottom, top)
+     && isProjectionInTriangle(pts[2], left, bottom, top) ){
+    if (  sqrt(vtkMath::Distance2BetweenPoints(pts[0], lOrigin)) < lRadius 
+       && sqrt(vtkMath::Distance2BetweenPoints(pts[1], lOrigin)) < lRadius
+       && sqrt(vtkMath::Distance2BetweenPoints(pts[2], lOrigin)) < lRadius )
+      return true;
+    else
+      return false;
+  }
+  if (  isProjectionInTriangle(pts[0], right, bottom, top) 
+     && isProjectionInTriangle(pts[1], right, bottom, top)
+     && isProjectionInTriangle(pts[2], right, bottom, top) ){
+    if (  sqrt(vtkMath::Distance2BetweenPoints(pts[0], rOrigin)) < rRadius 
+       && sqrt(vtkMath::Distance2BetweenPoints(pts[1], rOrigin)) < rRadius
+       && sqrt(vtkMath::Distance2BetweenPoints(pts[2], rOrigin)) < rRadius )
+      return true;
+    else
+      return false;
+  }
+
+  return false;
 }

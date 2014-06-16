@@ -19,7 +19,6 @@
 #include "Detector.h"
 
 #define PI 3.14159265
-//#define SHOW 
 
 void Usage(const char *prog) {
   std::cout << "Usage: " << prog
@@ -32,6 +31,23 @@ void Usage(const char *prog) {
 
 int main ( int argc, char *argv[] )
 {
+// TODO: to be removed
+#if defined (CENTER_IN_RECT)
+  std::cout << "CENTER_IN_RECT" << std::endl;
+#elif defined (TRIANGLE_IN_RECT)
+  std::cout << "TRIANGLE_IN_RECT" << std::endl;
+#elif defined (CENTER_IN_DIAM)
+  std::cout << "CENTER_IN_DIAM" << std::endl;
+#elif defined (TRIANGLE_IN_DIAM)
+  std::cout << "TRIANGLE_IN_DIAM" << std::endl;
+#endif
+#if defined (CENTER_IN_CIRCLE)
+  std::cout << "CENTER_IN_CIRCLE" << std::endl;
+#endif
+#if defined (SHOW)
+  std::cout << "SHOW" << std::endl;
+#endif
+
   std::string inputFilename;
   std::string landmarkFilename;
   bool flag_area = false, flag_incircle = false;
@@ -72,7 +88,7 @@ int main ( int argc, char *argv[] )
   // Define the normal direction of the projection plane
   double n[3] = {0.0, abs(sal[1] - cl[1]), abs(sal[2] - cl[2])};
   double norm = sqrt(pow(n[1], 2.0) + pow(n[2], 2.0));
-//  double theta = acos(-n[2] / norm) * 180 / PI;
+  double theta = acos(-n[2] / norm) * 180 / PI;
 
   vtkSmartPointer<vtkClipPolyData> nose = 
     getNoseClipper(reader, se, cl, cr, al, ar);
@@ -98,8 +114,7 @@ int main ( int argc, char *argv[] )
 
   vtkSmartPointer<vtkTransform> transform = 
     vtkSmartPointer<vtkTransform>::New();
-  transform->RotateWXYZ(-20, 1, 0, 0);
-  //transform->RotateWXYZ(90-theta, 1, 0, 0);
+  transform->RotateWXYZ(90-theta, 1, 0, 0);
 
   vtkSmartPointer<vtkTransformPolyDataFilter> noseFilter =
     vtkSmartPointer<vtkTransformPolyDataFilter>::New();
@@ -160,7 +175,7 @@ int main ( int argc, char *argv[] )
   writer->SetInputConnection(writeFilter->GetOutputPort());
   writer->Write();
 
-#ifdef SHOW 
+#if defined (SHOW) 
   renderWindowInteractor->Start();
 #endif
 

@@ -5,70 +5,72 @@
 #include <vtkClipPolyData.h>
 #include <vtkPLYReader.h>
 
+// NOTE: BE CAREFUL ABOUT THE LEFT AND RIGHT MEANING
+
 // Calculate the area of a triangle determined by points x, y, z,
 // using ad hoc methods
 //
 // Arguments
-// - x, y, z: the three points of a triangle
+// - A, B, C: the vertices of a triangle
 //
 // Return
 // - the area of the triangle
 double
 tarea(
-  const double x[3],
-  const double y[3],
-  const double z[3]
+  const double A[3],
+  const double B[3],
+  const double C[3]
 );
 
 // Calculate the area of a triangle determined by points x, y, z,
 // using VTK built-in functions
 //
 // Arguments
-// - x, y, z: the three points of a triangle
+// - A, B, C: the vertices of a triangle
 //
 // Return
 // - the area of the triangle
 double
 tarea2(
-  double x[3],
-  double y[3],
-  double z[3]
+  double A[3],
+  double B[3],
+  double C[3]
 );
 
 // Calculate the center of a triangle determined by points x, y, z
 //
 // Arguments
-// - x, y, z: the three points of a triangle
+// - A, B, C: the vertices of a triangle
 // - center: the return parameter of the triangle center
 void
 getCenter(
-  const double x[3],
-  const double y[3],
-  const double z[3],
+  const double A[3],
+  const double B[3],
+  const double C[3],
   double center[3]
 );
 
 // Calculate the center of an incircle in triangle xyz
 //
 // Arguments
-// - x, y, z: the three points of a triangle
+// - A, B, C: the vertices of a triangle
 // - incenter: the return parameter of the incircle center
 //
 // Return
 // - the radius of the circle
 double
 getIncircleCenter(
-  double x[3],
-  double y[3],
-  double z[3],
+  double A[3],
+  double B[3],
+  double C[3],
   double incenter[3]
 );
 
-// Decide point x is on the left/right side of line pt1-pt2
+// Decide point x is on the left/right side of line pt1->pt2
 //
 // Arguments
 // - x: the point
-// - pt1, pt2: two points on the line
+// - pt1, pt2: two points on the line, which is pointing from pt1 to pt2
 //
 // Return
 // - true, if the point is on the left side; false otherwise
@@ -106,7 +108,7 @@ GetLandmarksFromFile(
 // Get the nose area clip
 //
 // Arguments
-// - reader: the vtkPLYReader of the 3D face
+// - reader: the vtkPLYReader object of the 3D face
 // - se, cl, cr, al, ar: landmarks used
 //
 // Return
@@ -137,11 +139,11 @@ getProjection(
 // Is the center point in the rectangle and the z > 0 bisector?
 //
 // Arguments
-// - center: the center point of a triangle 
+// - center: the center point of a triangle mesh
 // - left, right, bottom, top: the boundaries of the rectangle
 //
 // Return
-// - true if the center point is in the rectangle and the z > 0 bisector; 
+// - true if the center point is in the rectangle and the z > 0 bisector
 // - false otherwise
 bool
 isCenterInRect(
@@ -152,22 +154,156 @@ isCenterInRect(
   const double top
 );
 
-// Are all points in the rectangle and the z > 0 bisector?
+// Is the triangle in the rectangle and the z > 0 bisector?
 //
 // Arguments
-// - pts: all points in a triangle we want to decide
+// - pts: the vertices of the triangle we want to decide
 // - left, right, bottom, top: the boundaries of the rectangle
 //
 // Return
-// - true if all points are in the rectangle and the z > 0 bisector; 
+// - true if the triangle is in the rectangle and the z > 0 bisector
 // - false otherwise
 bool
-isAllPointsInRect(
+isTriangleInRect(
   const double pts[3][3],
   const double left,
   const double right,
   const double bottom,
   const double top
+);
+
+// Is the center point "in the diamond" defined by ar, al, sn, prn
+//
+// Arguments
+// - center: the center point of a triangle 
+// - left, right, bottom, top: the boundaries of the diamond
+//
+// Return
+// - true if the center point is in the diamond
+// - false otherwise
+bool
+isCenterInDiam(
+  const double center[3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3]
+);
+
+// A triangle defined by points A, B, C is on a plane. Is the projection of a
+// point on the plane inside the triangle?
+//
+// Arguments
+// - pt: the point 
+// - A, B, C: the vertices of the triangle
+//
+// Return
+// - true if the point projection is inside the triangle
+// - false otherwise
+bool
+isProjectionInTriangle(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3]
+);
+
+// Calculate the projection of a point on the plane of a triangle
+//
+// Arguments
+// - pt: the point
+// - A, B, C: the vertices of the triangle
+// - proj: the return parameter of the projected point
+void
+getProjectionPoint(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3],
+  double proj[3]
+);
+
+// Is the point inside the triangle?
+//
+// Arguments
+// - pt: the point 
+// - A, B, C: the vertices of the triangle
+//
+// Return
+// - true if the point projection is inside the triangle
+// - false otherwise
+bool
+isPointInTriangle(
+  const double pt[3],
+  const double A[3],
+  const double B[3],
+  const double C[3]
+);
+
+// Is the triangle "in the diamond" defined by ar, al, sn, prn
+//
+// Arguments
+// - pts: the vertices of the triangle we want to decide
+// - left, right, bottom, top: the boundaries of the diamond
+//
+// Return
+// - true if the triangle is in the diamond 
+// - false otherwise
+bool
+isTriangleInDiam(
+  const double pts[3][3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3]
+);
+
+// Is the center point inside either the left or the right incircle
+//
+// Arguments
+// - center: the center point of a triangle 
+// - left, right, bottom, top: the boundaries of the diamond
+// - lOrigin, lRadius, rOrigin, rRadius: origin and radius of the left and the 
+//   right incircle
+//
+// Return
+// - true if the center point is in the incircle 
+// - false otherwise
+bool
+isCenterInCircle(
+  const double center[3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3],
+  const double lOrigin[3],
+  const double lRadius,
+  const double rOrigin[3],
+  const double rRadius
+);
+
+// Is the triangle inside either the left or the right incircle
+//
+// Arguments
+// - pts: the vertices of the triangle we want to decide
+// - left, right, bottom, top: the boundaries of the diamond
+// - lOrigin, lRadius, rOrigin, rRadius: origin and radius of the left and the 
+//   right incircle
+//
+// Return
+// - true if the triangle is in the incircle 
+// - false otherwise
+bool
+isTriangleInCircle(
+  const double pts[3][3],
+  const double left[3],
+  const double right[3],
+  const double bottom[3],
+  const double top[3],
+  const double lOrigin[3],
+  const double lRadius,
+  const double rOrigin[3],
+  const double rRadius
 );
 
 #endif  // _UTILITY_H_

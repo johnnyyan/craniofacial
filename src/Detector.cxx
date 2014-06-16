@@ -29,16 +29,24 @@ findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
     for (vtkIdType i = 0; i < 3; i++) {
       points->GetPoint(pts[i],x[i]);
     }
-//    //-- Center is in the rect
-//    double center[3];
-//    getCenter(x[0], x[1], x[2], center);
-//    if ( isCenterInRect(center, ar[0], al[0], sn[1], prn[1]) ) {
-//    //-- All points are in the rect
-//    if ( isAllPointsInRect(x, ar[0], al[0], sn[1], prn[1]) ) {
+
+#if defined (CENTER_IN_RECT)
+    //-- Center is in the rect
+    double center[3];
+    getCenter(x[0], x[1], x[2], center);
+    if ( isCenterInRect(center, ar[0], al[0], sn[1], prn[1]) ) {
+#elif defined (TRIANGLE_IN_RECT)
+    //-- All points are in the rect
+    if ( isTriangleInRect(x, ar[0], al[0], sn[1], prn[1]) ) {
+#elif defined (CENTER_IN_DIAM)
     //-- Center is in the diamond 
     double center[3];
     getCenter(x[0], x[1], x[2], center);
-    if ( isCenterInDim(center, ar, al, sn, prn) ) {
+    if ( isCenterInDiam(center, al, ar, sn, prn) ) {
+#elif defined (TRIANGLE_IN_DIAM)
+    //-- All points are in the diamond
+    if ( isTriangleInDiam(x, al, ar, sn, prn) ) {
+#endif
       double area = tarea2(x[0], x[1], x[2]);
       // TODO: replace hard-coded number 4.0 with a dynamic one
       if (area > 4.0) {
@@ -73,6 +81,7 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
   vtkSmartPointer<vtkPoints> nostrilPoints =
     vtkSmartPointer<vtkPoints>::New();
 
+  // TODO: What's the proper value of the adjustment? Currently 2.0
   double xmin = ar[0]+2.0, xmax = al[0]-2.0;
   double ymin = sn[1], ymax = prn[1]-2.0;
   
@@ -80,7 +89,7 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
   double lc[3], rc[3];  
   double lradius = getIncircleCenter(prn, sn, al, lc);
   double rradius = getIncircleCenter(prn, sn, ar, rc);
-
+/*
   std::cout << "prn: " << prn[0] << "," << prn[1] << "," << prn[2] << std::endl;
   std::cout << "sn: " << sn[0] << "," << sn[1] << "," << sn[2] << std::endl;
   std::cout << "ar: " << ar[0] << "," << ar[1] << "," << ar[2] << std::endl;
@@ -89,7 +98,7 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
   std::cout << "right center: " << rc[0] << "," << rc[1] << "," << rc[2] << std::endl;
   std::cout << "lradius: " << lradius << std::endl;
   std::cout << "rradius: " << rradius << std::endl;
-
+*/
   ca->InitTraversal();
   vtkIdType npts, *pts;
   int res;
@@ -99,35 +108,17 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
     for (vtkIdType i = 0; i < 3; i++) {
       points->GetPoint(pts[i],x[i]);
     }
+
+#if defined (CENTER_IN_CIRCLE)
     double center[3];
     getCenter(x[0], x[1], x[2], center);
-
-    if (center[2] > 0.0) {
-      // TODO: clean up code
-      if ((onLeft(x[0], prn, sn) && onLeft(x[1], prn, sn) && onLeft(x[2], prn, sn)) ||
-          (!onLeft(x[0], prn, sn) && !onLeft(x[1], prn, sn) && !onLeft(x[2], prn, sn))) {
-        bool left = onLeft(center, prn, sn);
-        bool inside = false;
-        double dist;
-        if (left) {
-          dist = sqrt(vtkMath::Distance2BetweenPoints(center, lc));
-          if (dist < lradius)
-            inside = true;
-          else
-            inside = false;
-        } else {
-          dist = sqrt(vtkMath::Distance2BetweenPoints(center, rc));
-          if (dist < rradius)
-            inside = true;
-          else
-            inside = false;
-        }
-        if (inside) {
-          nostrilPoints->InsertNextPoint(x[0]);
-          nostrilPoints->InsertNextPoint(x[1]);
-          nostrilPoints->InsertNextPoint(x[2]);
-        }
-      }
+    if ( isCenterInCircle(center, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+#elif defined (TRIANGLE_IN_CIRCLE)
+    if ( isTriangleInCircle(x, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+#endif
+      nostrilPoints->InsertNextPoint(x[0]);
+      nostrilPoints->InsertNextPoint(x[1]);
+      nostrilPoints->InsertNextPoint(x[2]);
     }
   }
   return nostrilPoints;

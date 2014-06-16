@@ -20,6 +20,12 @@
 *.out
 *.app
 
-README.TXT
-bin/
+bin/*.txt
+bin/CMakeFiles
+bin/cmake_install.cmake
+bin/Makefile
+bin/NostrilDetect
+bin/ShowLandmarks
+bin/*.jpg
+bin/*.ply
 data/
