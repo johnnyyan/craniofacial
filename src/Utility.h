@@ -7,7 +7,7 @@
 
 // NOTE: BE CAREFUL ABOUT THE LEFT AND RIGHT MEANING
 
-// Calculate the area of a triangle determined by points x, y, z,
+// Calculate the area of a triangle determined by points A, B, C,
 // using ad hoc methods
 //
 // Arguments
@@ -22,7 +22,7 @@ tarea(
   const double C[3]
 );
 
-// Calculate the area of a triangle determined by points x, y, z,
+// Calculate the area of a triangle determined by points A, B, C,
 // using VTK built-in functions
 //
 // Arguments
@@ -37,7 +37,7 @@ tarea2(
   double C[3]
 );
 
-// Calculate the center of a triangle determined by points x, y, z
+// Calculate the center of a triangle determined by points A, B, C
 //
 // Arguments
 // - A, B, C: the vertices of a triangle
@@ -179,9 +179,10 @@ isTriangleInRect(
 // - left, right, bottom, top: the boundaries of the diamond
 //
 // Return
-// - true if the center point is in the diamond
-// - false otherwise
-bool
+// - 1: if the center is in the left part of the diamond(left triangle)
+// - 2: if the center is in the right part of the diamond(right triangle)
+// - 0: otherwise
+int
 isCenterInDiam(
   const double center[3],
   const double left[3],
@@ -247,9 +248,10 @@ isPointInTriangle(
 // - left, right, bottom, top: the boundaries of the diamond
 //
 // Return
-// - true if the triangle is in the diamond 
-// - false otherwise
-bool
+// - 1: if the triangle is in the left part of the diamond(left triangle)
+// - 2: if the triangle is in the right part of the diamond(right triangle)
+// - 0: otherwise
+int
 isTriangleInDiam(
   const double pts[3][3],
   const double left[3],
@@ -267,9 +269,10 @@ isTriangleInDiam(
 //   right incircle
 //
 // Return
-// - true if the center point is in the incircle 
-// - false otherwise
-bool
+// - 1: if the center is in the left incircle
+// - 2: if the center is in the right incircle
+// - 0: otherwise
+int
 isCenterInCircle(
   const double center[3],
   const double left[3],
@@ -291,9 +294,10 @@ isCenterInCircle(
 //   right incircle
 //
 // Return
-// - true if the triangle is in the incircle 
-// - false otherwise
-bool
+// - 1: if the triangle is in the left incircle
+// - 2: if the triangle is in the right incircle
+// - 0: otherwise
+int
 isTriangleInCircle(
   const double pts[3][3],
   const double left[3],

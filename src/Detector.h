@@ -5,19 +5,7 @@
 #include <vtkPoints.h>
 #include <vtkPLYReader.h>
 
-// Find the vertices located in the nostril area via area threshold
-//
-// Arguments
-// - reader: the vtkPLYReader of the 3D face
-//
-// Return
-// - the points in the nostril area
-vtkSmartPointer<vtkPoints>
-findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
-                        double prn[3], double sn[3], 
-                        double al[3], double ar[3]);
-
-// Find the vertices located in the nostril area via incircle method
+// Find the points located in the nostril area via area threshold
 //
 // Arguments
 // - reader: the vtkPLYReader of the 3D face
@@ -26,11 +14,32 @@ findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
 // Return
 // - the points in the nostril area
 vtkSmartPointer<vtkPoints>
-findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
-                            double prn[3], double sn[3], 
-                            double al[3], double ar[3]);
+findNostrilPointsByArea(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+);
 
-// Find the vertices located in the nostril area via incircle method 
+// Find the points located in the nostril area via incircle method
+//
+// Arguments
+// - reader: the vtkPLYReader of the 3D face
+// - prn, sn, al, ar: landmarks used
+//
+// Return
+// - the points in the nostril area
+vtkSmartPointer<vtkPoints>
+findNostrilPointsByIncircle(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+);
+
+// Find the points located in the nostril area via incircle method 
 // and area threshold
 //
 // Arguments
@@ -40,8 +49,12 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
 // Return
 // - the points in the nostril area
 vtkSmartPointer<vtkPoints>
-findNostrilPointsDefault(vtkSmartPointer<vtkPLYReader> reader,
-                         double prn[3], double sn[3], 
-                         double al[3], double ar[3]);
+findNostrilPointsDefault(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+);
 
 #endif  // _DETECTOR_H_

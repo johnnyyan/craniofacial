@@ -289,7 +289,7 @@ isTriangleInRect(
          && isCenterInRect(pts[2], left, right, bottom, top);
 }
 
-bool
+int
 isCenterInDiam(
   const double center[3],
   const double left[3],
@@ -297,8 +297,11 @@ isCenterInDiam(
   const double bottom[3],
   const double top[3])
 {
-  return isProjectionInTriangle(center, left, bottom, top) 
-         || isProjectionInTriangle(center, right, bottom, top);
+  if ( isProjectionInTriangle(center, left, bottom, top) )
+    return 1;
+  if ( isProjectionInTriangle(center, right, bottom, top) )
+    return 2;
+  return 0;
 }
 
 bool
@@ -368,7 +371,7 @@ isPointInTriangle(
   return (abDot > 0 && bcDot > 0 && caDot > 0) || (abDot < 0 && bcDot < 0 && caDot < 0); 
 }
 
-bool
+int
 isTriangleInDiam(
   const double pts[3][3],
   const double left[3],
@@ -377,15 +380,18 @@ isTriangleInDiam(
   const double top[3]
 )
 {
-  return (  isProjectionInTriangle(pts[0], left, bottom, top) 
-         && isProjectionInTriangle(pts[1], left, bottom, top)
-         && isProjectionInTriangle(pts[2], left, bottom, top) ) ||
-         (  isProjectionInTriangle(pts[0], right, bottom, top) 
-         && isProjectionInTriangle(pts[1], right, bottom, top)
-         && isProjectionInTriangle(pts[2], right, bottom, top) );
+  if (  isProjectionInTriangle(pts[0], left, bottom, top) 
+     && isProjectionInTriangle(pts[1], left, bottom, top)
+     && isProjectionInTriangle(pts[2], left, bottom, top) )
+    return 1;
+  if (  isProjectionInTriangle(pts[0], right, bottom, top) 
+     && isProjectionInTriangle(pts[1], right, bottom, top)
+     && isProjectionInTriangle(pts[2], right, bottom, top) )
+    return 2;
+  return 0;
 }
 
-bool
+int
 isCenterInCircle(
   const double center[3],
   const double left[3],
@@ -402,21 +408,21 @@ isCenterInCircle(
     // We could have used the distance between origin and the projection of 
     // center. But we decided to use the circle radius as a sphere radius
     if ( sqrt(vtkMath::Distance2BetweenPoints(center, lOrigin)) < lRadius )
-      return true;
+      return 1;
     else
-      return false;
+      return 0;
   }
   if ( isProjectionInTriangle(center, right, bottom, top) ){
     if ( sqrt(vtkMath::Distance2BetweenPoints(center, rOrigin)) < rRadius )
-      return true;
+      return 2;
     else
-      return false;
+      return 0;
   }
 
-  return false;
+  return 0;
 }
 
-bool
+int
 isTriangleInCircle(
   const double pts[3][3],
   const double left[3],
@@ -435,9 +441,9 @@ isTriangleInCircle(
     if (  sqrt(vtkMath::Distance2BetweenPoints(pts[0], lOrigin)) < lRadius 
        && sqrt(vtkMath::Distance2BetweenPoints(pts[1], lOrigin)) < lRadius
        && sqrt(vtkMath::Distance2BetweenPoints(pts[2], lOrigin)) < lRadius )
-      return true;
+      return 1;
     else
-      return false;
+      return 0;
   }
   if (  isProjectionInTriangle(pts[0], right, bottom, top) 
      && isProjectionInTriangle(pts[1], right, bottom, top)
@@ -445,10 +451,10 @@ isTriangleInCircle(
     if (  sqrt(vtkMath::Distance2BetweenPoints(pts[0], rOrigin)) < rRadius 
        && sqrt(vtkMath::Distance2BetweenPoints(pts[1], rOrigin)) < rRadius
        && sqrt(vtkMath::Distance2BetweenPoints(pts[2], rOrigin)) < rRadius )
-      return true;
+      return 2;
     else
-      return false;
+      return 0;
   }
 
-  return false;
+  return 0;
 }

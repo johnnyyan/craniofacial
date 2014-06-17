@@ -7,10 +7,14 @@
 #include "Detector.h"
 
 vtkSmartPointer<vtkPoints>
-findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
-                        double prn[3], double sn[3], 
-                        double al[3], double ar[3]) {
-
+findNostrilPointsByArea(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+)
+{
   vtkSmartPointer<vtkPolyData> pd = reader->GetOutput();
   vtkSmartPointer<vtkCellArray> ca = pd->GetPolys();
   vtkSmartPointer<vtkPoints> points = pd->GetPoints();
@@ -53,7 +57,7 @@ findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
         nostrilPoints->InsertNextPoint(x[0]);
         nostrilPoints->InsertNextPoint(x[1]);
         nostrilPoints->InsertNextPoint(x[2]);
-      } 
+      }
       total += area;
       if (area > maxArea)
         maxArea = area;
@@ -69,10 +73,14 @@ findNostrilPointsByArea(vtkSmartPointer<vtkPLYReader> reader,
 }
 
 vtkSmartPointer<vtkPoints>
-findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
-                            double prn[3], double sn[3], 
-                            double al[3], double ar[3]) {
-
+findNostrilPointsByIncircle(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+)
+{
   vtkSmartPointer<vtkPolyData> pd = reader->GetOutput();
   vtkSmartPointer<vtkCellArray> ca = pd->GetPolys();
   vtkSmartPointer<vtkPoints> points = pd->GetPoints();
@@ -125,10 +133,14 @@ findNostrilPointsByIncircle(vtkSmartPointer<vtkPLYReader> reader,
 }
 
 vtkSmartPointer<vtkPoints>
-findNostrilPointsDefault(vtkSmartPointer<vtkPLYReader> reader,
-                         double prn[3], double sn[3], 
-                         double al[3], double ar[3]) {
-
+findNostrilPointsDefault(
+  vtkSmartPointer<vtkPLYReader> reader,
+  double prn[3],
+  double sn[3],
+  double al[3],
+  double ar[3]
+)
+{
   vtkSmartPointer<vtkPolyData> pd = reader->GetOutput();
   vtkSmartPointer<vtkCellArray> ca = pd->GetPolys();
   vtkSmartPointer<vtkPoints> points = pd->GetPoints();
@@ -170,9 +182,23 @@ findNostrilPointsDefault(vtkSmartPointer<vtkPLYReader> reader,
     for (vtkIdType i = 0; i < 3; i++) {
       points->GetPoint(pts[i],x[i]);
     }
+
+#if defined (CENTER_IN_CIRCLE)
     double center[3];
     getCenter(x[0], x[1], x[2], center);
-
+    if ( isCenterInCircle(center, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+#elif defined (TRIANGLE_IN_CIRCLE)
+    if ( isTriangleInCircle(x, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+#endif
+      double area = tarea2(x[0], x[1], x[2]);
+      if (area > 4.0) {
+        nostrilPoints->InsertNextPoint(x[0]);
+        nostrilPoints->InsertNextPoint(x[1]);
+        nostrilPoints->InsertNextPoint(x[2]);
+      }
+    }
+  }
+/*
     if (center[2] > 0.0) {
       // TODO: clean up code
       bool left = onLeft(center, prn, sn);
@@ -279,6 +305,6 @@ findNostrilPointsDefault(vtkSmartPointer<vtkPLYReader> reader,
   std::cout << "right max area: " << rmaxArea << std::endl;
   std::cout << "right min area: " << rminArea << std::endl;
   std::cout << "right average : " << rtotal / rcount << std::endl; 
-
+*/
   return nostrilPoints;
 }
