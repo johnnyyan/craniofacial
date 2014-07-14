@@ -21,6 +21,12 @@ elseif (DEFINED _TRIANGLE_IN_CIRCLE)
   add_definitions(-DTRIANGLE_IN_CIRCLE)
 endif ()
 
+if (DEFINED _DEFAULT_FIXED_AREA)
+  add_definitions(-DDEFAULT_FIXED_AREA)
+elseif (DEFINED _DEFAULT_AVERAGE_AREA)
+  add_definitions(-DDEFAULT_AVERAGE_AREA)
+endif ()
+
 if (DEFINED _SHOW)
   add_definitions(-DSHOW)
 endif ()

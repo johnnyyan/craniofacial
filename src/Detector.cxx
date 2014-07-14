@@ -3,8 +3,13 @@
 #include <vtkMath.h>
 
 #include <assert.h>
+#include <vector>
+#include <map>
 #include "Utility.h"
 #include "Detector.h"
+
+#define LEFT  1
+#define RIGHT 2
 
 vtkSmartPointer<vtkPoints>
 findNostrilPointsByArea(
@@ -53,7 +58,10 @@ findNostrilPointsByArea(
 #endif
       double area = tarea2(x[0], x[1], x[2]);
       // TODO: replace hard-coded number 4.0 with a dynamic one
-      if (area > 4.0) {
+      if (area > 4.0 ){ //&& x[0][2] > 72. && x[1][2] > 72. && x[2][2] > 72.) {
+        std::cout << "(" << x[0][0] << "," << x[0][1] << "," << x[0][2] << "); ";
+std::cout << "(" << x[1][0] << "," << x[1][1] << "," << x[1][2] << "); ";
+std::cout << "(" << x[2][0] << "," << x[2][1] << "," << x[2][2] << ")" << std::endl;
         nostrilPoints->InsertNextPoint(x[0]);
         nostrilPoints->InsertNextPoint(x[1]);
         nostrilPoints->InsertNextPoint(x[2]);
@@ -65,9 +73,6 @@ findNostrilPointsByArea(
         minArea = area;
     }
   }
-  std::cout << "max area: " << maxArea << std::endl;
-  std::cout << "min area: " << minArea << std::endl;
-  //std::cout << "average : " << total / pd->GetNumberOfCells() << std::endl; 
 
   return nostrilPoints;
 }
@@ -97,16 +102,7 @@ findNostrilPointsByIncircle(
   double lc[3], rc[3];  
   double lradius = getIncircleCenter(prn, sn, al, lc);
   double rradius = getIncircleCenter(prn, sn, ar, rc);
-/*
-  std::cout << "prn: " << prn[0] << "," << prn[1] << "," << prn[2] << std::endl;
-  std::cout << "sn: " << sn[0] << "," << sn[1] << "," << sn[2] << std::endl;
-  std::cout << "ar: " << ar[0] << "," << ar[1] << "," << ar[2] << std::endl;
-  std::cout << "al: " << al[0] << "," << al[1] << "," << al[2] << std::endl;
-  std::cout << "left center: " << lc[0] << "," << lc[1] << "," << lc[2] << std::endl;
-  std::cout << "right center: " << rc[0] << "," << rc[1] << "," << rc[2] << std::endl;
-  std::cout << "lradius: " << lradius << std::endl;
-  std::cout << "rradius: " << rradius << std::endl;
-*/
+
   ca->InitTraversal();
   vtkIdType npts, *pts;
   int res;
@@ -156,155 +152,99 @@ findNostrilPointsDefault(
   double lc[3], rc[3];  
   double lradius = getIncircleCenter(prn, sn, al, lc);
   double rradius = getIncircleCenter(prn, sn, ar, rc);
-/*
-  std::cout << "prn: " << prn[0] << "," << prn[1] << "," << prn[2] << std::endl;
-  std::cout << "sn: " << sn[0] << "," << sn[1] << "," << sn[2] << std::endl;
-  std::cout << "ar: " << ar[0] << "," << ar[1] << "," << ar[2] << std::endl;
-  std::cout << "al: " << al[0] << "," << al[1] << "," << al[2] << std::endl;
-  std::cout << "left center: " << lc[0] << "," << lc[1] << "," << lc[2] << std::endl;
-  std::cout << "right center: " << rc[0] << "," << rc[1] << "," << rc[2] << std::endl;
-  std::cout << "lradius: " << lradius << std::endl;
-  std::cout << "rradius: " << rradius << std::endl;
-*/
+
   ca->InitTraversal();
   vtkIdType npts, *pts;
   int res;
-  int lcount = 0, rcount = 0;  // number of meshes in left/right nostril
-  double ltotal = 0.0, rtotal = 0.0;
-  double lmaxArea = 0.0, lminArea = 1.0E12;
-  double rmaxArea = 0.0, rminArea = 1.0E12;
 
-  std::vector<double> larea, rarea;
+#if defined (DEFAULT_AVERAGE_AREA)
+  double leftTotal = 0.0, rightTotal = 0.0;
+  double leftMaxArea = 0.0, leftMinArea = 1.0E12;
+  double rightMaxArea = 0.0, rightMinArea = 1.0E12;
+
+  std::map<vtkIdType *, double> leftCells, rightCells;
+#endif
 
   while((res = ca->GetNextCell(npts, pts))) {
     assert(npts == 3);
     double x[3][3];
     for (vtkIdType i = 0; i < 3; i++) {
-      points->GetPoint(pts[i],x[i]);
+      points->GetPoint(pts[i], x[i]);
     }
 
 #if defined (CENTER_IN_CIRCLE)
     double center[3];
     getCenter(x[0], x[1], x[2], center);
-    if ( isCenterInCircle(center, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+    int side = isCenterInCircle(center, al, ar, sn, prn, lc, lradius, rc, rradius);
 #elif defined (TRIANGLE_IN_CIRCLE)
-    if ( isTriangleInCircle(x, al, ar, sn, prn, lc, lradius, rc, rradius) ) {
+    int side = isTriangleInCircle(x, al, ar, sn, prn, lc, lradius, rc, rradius);
 #endif
+    if (side) {
       double area = tarea2(x[0], x[1], x[2]);
+#if defined (DEFAULT_FIXED_AREA)
       if (area > 4.0) {
         nostrilPoints->InsertNextPoint(x[0]);
         nostrilPoints->InsertNextPoint(x[1]);
         nostrilPoints->InsertNextPoint(x[2]);
       }
-    }
-  }
-/*
-    if (center[2] > 0.0) {
-      // TODO: clean up code
-      bool left = onLeft(center, prn, sn);
-      bool inside = false;
-      double dist;
-      if (left) {
-        dist = sqrt(vtkMath::Distance2BetweenPoints(center, lc));
-        if (dist < lradius)
-          inside = true;
-        else
-          inside = false;
+#elif defined (DEFAULT_AVERAGE_AREA)
+      if ( side == 1 ) {
+        leftCells[pts] = area;
+        leftTotal += area;
+        if (area > leftMaxArea)
+          leftMaxArea = area;
+        if (area < leftMinArea)
+          leftMinArea = area;
       } else {
-        dist = sqrt(vtkMath::Distance2BetweenPoints(center, rc));
-        if (dist < rradius)
-          inside = true;
-        else
-          inside = false;
+        rightCells[pts] = area;
+        rightTotal += area;
+        if (area > rightMaxArea)
+          rightMaxArea = area;
+        if (area < rightMinArea)
+          rightMinArea = area;
       }
-      if (inside) {
-        double area = tarea2(x[0], x[1], x[2]);
-        if (left) {
-          larea.push_back(area);
-          lcount++;
-          ltotal += area;
-          if (area > lmaxArea)
-            lmaxArea = area;
-          if (area < lminArea)
-            lminArea = area;
-        }
-        else {
-          rarea.push_back(area);
-          rcount++;
-          rtotal += area;
-          if (area > rmaxArea)
-            rmaxArea = area;
-          if (area < rminArea)
-            rminArea = area;
-        }
-      }
+#endif
     }
   }
 
-  ca->InitTraversal();
-  while((res = ca->GetNextCell(npts, pts))) {
-    assert(npts == 3);
-    double x[3][3];
-    for (vtkIdType i = 0; i < 3; i++) {
-      points->GetPoint(pts[i],x[i]);
-    }
-    double center[3];
-    getCenter(x[0], x[1], x[2], center);
+#if defined (DEFAULT_AVERAGE_AREA)
+  // TODO: Get a more proper and reasonable parameter other than 1.2
+  double leftAverageArea = leftTotal/leftCells.size()*1.2;
+  double rightAverageArea = rightTotal/rightCells.size()*1.2;
 
-    if (center[2] > 0.0) {
-      // TODO: clean up code
-      bool left = onLeft(center, prn, sn);
-      bool inside = false;
-      double dist;
-      if (left) {
-        dist = sqrt(vtkMath::Distance2BetweenPoints(center, lc));
-        if (dist < lradius)
-          inside = true;
-        else
-          inside = false;
-      } else {
-        dist = sqrt(vtkMath::Distance2BetweenPoints(center, rc));
-        if (dist < rradius)
-          inside = true;
-        else
-          inside = false;
-      }
-
-      if (inside) {
-        double area = tarea2(x[0], x[1], x[2]);
-        if (left && area > ltotal/lcount*1.2) {
-          nostrilPoints->InsertNextPoint(x[0]);
-          nostrilPoints->InsertNextPoint(x[1]);
-          nostrilPoints->InsertNextPoint(x[2]);
-        }
-        else if (!left && area > rtotal/rcount*1.2) {
-          nostrilPoints->InsertNextPoint(x[0]);
-          nostrilPoints->InsertNextPoint(x[1]);
-          nostrilPoints->InsertNextPoint(x[2]);
-        }
-      }
+  std::map<vtkIdType *, double>::const_iterator it;
+  for (it = leftCells.begin(); it != leftCells.end(); ++it) {
+    if (it->second > leftAverageArea) {
+      double x[3][3];
+      for (vtkIdType i = 0; i < 3; i++)
+        points->GetPoint(it->first[i], x[i]);
+      nostrilPoints->InsertNextPoint(x[0]);
+      nostrilPoints->InsertNextPoint(x[1]);
+      nostrilPoints->InsertNextPoint(x[2]);
     }
   }
 
-  std::cout << "left areas: " << std::endl;
-  for (std::vector<double>::const_iterator it = larea.begin();
-       it != larea.end(); it++) {
-    std::cout << *it << std::endl;
-  }
-  std::cout << "right areas: " << std::endl;
-  for (std::vector<double>::const_iterator it = rarea.begin();
-       it != rarea.end(); it++) {
-    std::cout << *it << std::endl;
+  for (it = rightCells.begin(); it != rightCells.end(); ++it) {
+    if (it->second > rightAverageArea) {
+      double x[3][3];
+      for (vtkIdType i = 0; i < 3; i++)
+        points->GetPoint(it->first[i], x[i]);
+      nostrilPoints->InsertNextPoint(x[0]);
+      nostrilPoints->InsertNextPoint(x[1]);
+      nostrilPoints->InsertNextPoint(x[2]);
+    }
   }
 
-  std::cout << "left meshes  : " << lcount << std::endl;
-  std::cout << "left max area: " << lmaxArea << std::endl;
-  std::cout << "left min area: " << lminArea << std::endl;
-  std::cout << "left average : " << ltotal / lcount << std::endl; 
-  std::cout << "right meshes  : " << rcount << std::endl;
-  std::cout << "right max area: " << rmaxArea << std::endl;
-  std::cout << "right min area: " << rminArea << std::endl;
-  std::cout << "right average : " << rtotal / rcount << std::endl; 
-*/
+  std::cout << "left meshes  : " << leftCells.size() << std::endl;
+  std::cout << "left max area: " << leftMaxArea << std::endl;
+  std::cout << "left min area: " << leftMinArea << std::endl;
+  std::cout << "left average : " << leftTotal / leftCells.size() << std::endl; 
+  std::cout << "right meshes  : " << rightCells.size() << std::endl;
+  std::cout << "right max area: " << rightMaxArea << std::endl;
+  std::cout << "right min area: " << rightMinArea << std::endl;
+  std::cout << "right average : " << rightTotal / rightCells.size() << std::endl;
+
+#endif
+
   return nostrilPoints;
 }

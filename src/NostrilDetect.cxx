@@ -31,23 +31,6 @@ void Usage(const char *prog) {
 
 int main ( int argc, char *argv[] )
 {
-// TODO: to be removed
-#if defined (CENTER_IN_RECT)
-  std::cout << "CENTER_IN_RECT" << std::endl;
-#elif defined (TRIANGLE_IN_RECT)
-  std::cout << "TRIANGLE_IN_RECT" << std::endl;
-#elif defined (CENTER_IN_DIAM)
-  std::cout << "CENTER_IN_DIAM" << std::endl;
-#elif defined (TRIANGLE_IN_DIAM)
-  std::cout << "TRIANGLE_IN_DIAM" << std::endl;
-#endif
-#if defined (CENTER_IN_CIRCLE)
-  std::cout << "CENTER_IN_CIRCLE" << std::endl;
-#endif
-#if defined (SHOW)
-  std::cout << "SHOW" << std::endl;
-#endif
-
   std::string inputFilename;
   std::string landmarkFilename;
   bool flag_area = false, flag_incircle = false;

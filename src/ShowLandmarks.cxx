@@ -14,6 +14,9 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkCellArray.h>
 #include <vtkVertexGlyphFilter.h>
+#include <vtkAxesActor.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
 
 #include "Utility.h"
 
@@ -70,15 +73,31 @@ int main ( int argc, char *argv[] )
   glyphFilter->SetInputConnection(nosepd->GetProducerPort());
   glyphFilter->Update();
 
+  vtkSmartPointer<vtkTransform> transform = 
+    vtkSmartPointer<vtkTransform>::New();
+  transform->RotateWXYZ(0, 1, 0, 0);
+
+  vtkSmartPointer<vtkTransformPolyDataFilter> headFilter =
+    vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+  headFilter->SetTransform(transform);
+  headFilter->SetInputConnection(pd->GetProducerPort());
+  headFilter->Update();
+
+  vtkSmartPointer<vtkTransformPolyDataFilter> landmarkFilter =
+    vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+  landmarkFilter->SetTransform(transform);
+  landmarkFilter->SetInputConnection(glyphFilter->GetOutputPort());
+  landmarkFilter->Update();
+
   // Visualize
   // Mapping original head
   vtkSmartPointer<vtkPolyDataMapper> mapper =
     vtkSmartPointer<vtkPolyDataMapper>::New();
-  mapper->SetInputConnection(pd->GetProducerPort());
+  mapper->SetInputConnection(headFilter->GetOutputPort());
   // Mapping landmarks
   vtkSmartPointer<vtkPolyDataMapper> landmarkMapper =
     vtkSmartPointer<vtkPolyDataMapper>::New();
-  landmarkMapper->SetInputConnection(glyphFilter->GetOutputPort()); 
+  landmarkMapper->SetInputConnection(landmarkFilter->GetOutputPort()); 
 
   vtkSmartPointer<vtkActor> actor =
     vtkSmartPointer<vtkActor>::New();
@@ -98,12 +117,18 @@ int main ( int argc, char *argv[] )
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
     vtkSmartPointer<vtkRenderWindowInteractor>::New();
   renderWindowInteractor->SetRenderWindow(renderWindow);
+  
+  vtkSmartPointer<vtkAxesActor> axes =
+    vtkSmartPointer<vtkAxesActor>::New();
+  axes->SetTotalLength(200., 200., 200.);
 
+  renderer->AddActor(axes);
+  renderer->ResetCamera();
   renderer->AddActor(actor);
   renderer->AddActor(landmarkActor);
   renderer->SetBackground(.1, .2, .3);
-  renderWindow->SetSize(800, 800);
 
+  renderWindow->SetSize(800, 800);
   renderWindow->Render();
   renderWindowInteractor->Start();
 
